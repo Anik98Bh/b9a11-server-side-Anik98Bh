@@ -49,6 +49,30 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/myQueries/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id)
+            const result = await queriesCollection.findOne({ _id: id });
+            res.send(result);
+        })
+
+        app.put('/myQueries/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true };
+            const updateQueries = req.body;
+            const myQueries = {
+                $set: {
+                    name: updateQueries.name,
+                    brand: updateQueries.brand,
+                    title: updateQueries.title,
+                    reason: updateQueries.reason,
+                    image: updateQueries.image,
+                }
+            }
+            const result = await queriesCollection.updateOne(filter, myQueries, options);
+            res.send(result)
+        })
 
         app.delete('/myQueries/:id', async (req, res) => {
             const id = req.params.id;
