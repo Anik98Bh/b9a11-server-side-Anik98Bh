@@ -28,12 +28,13 @@ async function run() {
         // await client.connect();
 
         const queriesCollection = client.db('alternativeStocks').collection('queries');
+        // const userCollection = client.db('alternativeStocks').collection('user');
 
-        // app.get('/queries', async (req, res) => {
-        //     const cursor = queriesCollection.find();
-        //     const result = await cursor.toArray();
-        //     res.send(result)
-        // })
+        app.get('/queries', async (req, res) => {
+            const cursor = queriesCollection.find();
+            const result = await cursor.toArray();
+            res.send(result)
+        })
 
         app.post('/queries', async (req, res) => {
             const newQueries = req.body;
@@ -41,8 +42,15 @@ async function run() {
             res.send(result);
         })
 
+        // user related api
+        app.get('/myQueries/:email', async (req, res) => {
+            const email = req.params.email;
+            const result = await queriesCollection.find({email}).toArray();
+            res.send(result);
+        })
+
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
