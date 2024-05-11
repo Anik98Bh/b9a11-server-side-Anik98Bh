@@ -29,10 +29,16 @@ async function run() {
 
         const queriesCollection = client.db('alternativeStocks').collection('queries');
 
-        app.get('/queries', async (req, res) => {
-            const cursor = queriesCollection.find();
-            const result = await cursor.toArray();
-            res.send(result)
+        // app.get('/queries', async (req, res) => {
+        //     const cursor = queriesCollection.find();
+        //     const result = await cursor.toArray();
+        //     res.send(result)
+        // })
+
+        app.post('/queries', async (req, res) => {
+            const newQueries = req.body;
+            const result = await queriesCollection.insertOne(newQueries);
+            res.send(result);
         })
 
         // Send a ping to confirm a successful connection
