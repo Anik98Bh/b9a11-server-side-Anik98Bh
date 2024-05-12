@@ -35,6 +35,25 @@ const logger = async (req, res, next) => {
     next();
 }
 
+const verifyToken = async (req, res, next) => {
+    const token = req?.cookies?.token;
+    console.log('value of token in middleware', token);
+    if (!token) {
+        return res.status(401).send({ message: 'not authorized' })
+    }
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        //err
+        if (err) {
+            console.log(err)
+            return res.status(401).send({ message: 'unauthorized access' })
+        }
+        //if token is valid then it would be decoded
+        console.log('value in the token', decoded)
+        req.user = decoded;
+        next();
+    })
+}
+
 
 async function run() {
     try {
@@ -45,7 +64,7 @@ async function run() {
         // const userCollection = client.db('alternativeStocks').collection('user');
 
         //auth related api
-        app.post('/jwt',logger, async (req, res) => {
+        app.post('/jwt', logger, async (req, res) => {
             const user = req.body;
             console.log(user);
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
@@ -55,6 +74,12 @@ async function run() {
                     secure: false,
                 })
                 .send({ success: true });
+        })
+
+        app.post('/logout', async (req, res) => {
+            const user = req.body;
+            console.log('logging out', user)
+            res.clearCookie('token', { maxAge: 0 }).send({ success: true })
         })
 
 
@@ -72,9 +97,13 @@ async function run() {
         })
 
         // user related api
-        app.get('/myQueries/:email', logger, async (req, res) => {
+        app.get('/myQueries/:email', logger, verifyToken, async (req, res) => {
             const email = req.params.email;
             console.log('tok tok token', req.cookies.token)
+            console.log('user in the valid token', req?.user)
+            if (req.params?.email !== req.user?.email) {
+                return res.status(403).send({ message: 'forbidden access two' })
+            }
             const result = await queriesCollection.find({ email }).toArray();
             res.send(result);
         })
