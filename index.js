@@ -61,7 +61,7 @@ async function run() {
         // await client.connect();
 
         const queriesCollection = client.db('alternativeStocks').collection('queries');
-        // const userCollection = client.db('alternativeStocks').collection('user');
+        const recommendationCollection = client.db('alternativeStocks').collection('recommendation');
 
         //auth related api
         app.post('/jwt', logger, async (req, res) => {
@@ -138,6 +138,20 @@ async function run() {
             const query = { _id: new ObjectId(id) }
             const result = await queriesCollection.deleteOne(query);
             res.send(result)
+        })
+
+        //recommendation api
+
+        app.get('/recommendation', logger, async (req, res) => {
+            const cursor = recommendationCollection.find();
+            const result = await cursor.toArray();
+            res.send(result)
+        })
+
+        app.post('/recommendation', async(req,res)=>{
+            const newRecommendation = req.body;
+            const result = await recommendationCollection.insertOne(newRecommendation);
+            res.send(result);
         })
 
         // Send a ping to confirm a successful connection
