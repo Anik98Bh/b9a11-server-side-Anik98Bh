@@ -15,7 +15,7 @@ app.use(cors({
     credentials: true,
 }));
 app.use(express.json());
-
+app.use(cookieParser());
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.jgrphar.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -29,6 +29,13 @@ const client = new MongoClient(uri, {
     }
 });
 
+// create middlewares
+const logger = async (req, res, next) => {
+    console.log('called:', req.host, req.originalUrl)
+    next();
+}
+
+
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
@@ -38,7 +45,7 @@ async function run() {
         // const userCollection = client.db('alternativeStocks').collection('user');
 
         //auth related api
-        app.post('/jwt', async (req, res) => {
+        app.post('/jwt',logger, async (req, res) => {
             const user = req.body;
             console.log(user);
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
@@ -46,14 +53,13 @@ async function run() {
                 .cookie('token', token, {
                     httpOnly: true,
                     secure: false,
-                    sameSite: 'none'
                 })
                 .send({ success: true });
         })
 
 
         //queries related api
-        app.get('/queries', async (req, res) => {
+        app.get('/queries', logger, async (req, res) => {
             const cursor = queriesCollection.find();
             const result = await cursor.toArray();
             res.send(result)
@@ -66,8 +72,9 @@ async function run() {
         })
 
         // user related api
-        app.get('/myQueries/:email', async (req, res) => {
+        app.get('/myQueries/:email', logger, async (req, res) => {
             const email = req.params.email;
+            console.log('tok tok token', req.cookies.token)
             const result = await queriesCollection.find({ email }).toArray();
             res.send(result);
         })
