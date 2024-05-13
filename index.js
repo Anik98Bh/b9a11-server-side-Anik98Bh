@@ -148,9 +148,16 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/recommendation_for_me/:email', logger, async (req, res) => {
+            const email = req.params?.email;
+            // console.log('creator', email)
+            const result = await recommendationCollection.find({creatorEmail:email}).toArray();
+            res.send(result);
+        })
+
         app.get('/recommendation/:email', logger, async (req, res) => {
             const email = req.params?.email;
-            console.log(email)
+            console.log('recommender', email)
             const result = await recommendationCollection.find({recommenderEmail:email}).toArray();
             res.send(result);
         })
