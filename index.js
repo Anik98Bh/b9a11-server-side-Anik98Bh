@@ -148,11 +148,26 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/recommendation/:email', logger, async (req, res) => {
+            const email = req.params?.email;
+            console.log(email)
+            const result = await recommendationCollection.find({recommenderEmail:email}).toArray();
+            res.send(result);
+        })
+
         app.post('/recommendation', async(req,res)=>{
             const newRecommendation = req.body;
             const result = await recommendationCollection.insertOne(newRecommendation);
             res.send(result);
         })
+
+        app.delete('/recommendation/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await recommendationCollection.deleteOne(query);
+            res.send(result)
+        })
+        
 
         // Send a ping to confirm a successful connection
         // await client.db("admin").command({ ping: 1 });
